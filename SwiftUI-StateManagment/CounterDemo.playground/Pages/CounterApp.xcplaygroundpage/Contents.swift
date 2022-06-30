@@ -19,10 +19,11 @@ struct ContentView: View {
                 NavigationLink(destination: FavoritePrimesView(state: state)) {
                     Text("Favorite primes")
                 }
-            }.navigationTitle("State Management")
+            }
+            .navigationTitle("State Management")
+            }
         }
     }
-}
 
 class AppState: ObservableObject, Identifiable {
     let objectWillChange: some Publisher = ObservableObjectPublisher()
@@ -61,6 +62,7 @@ struct CounterView: View {
                 if isPrime(self.state.count) {
                     updatedText = "yes"
                     textColor = .green
+                    state.isPrimeSheetShown = true
                 } else {
                     updatedText = "no "
                     textColor = .red
@@ -80,7 +82,7 @@ struct CounterView: View {
         }.font(.title)
             .navigationTitle("Counter Demo")
             .sheet(isPresented: $state.isPrimeSheetShown) {
-                isPrimeSheetView(state: state)
+                IsPrimeSheetView(state: state)
             }.alert(item: $state.alertNthPrime) { prime in
                 Alert(
                     title: Text("The prime is"),message: Text("\(prime)"),
@@ -101,7 +103,7 @@ extension Int : IdentifiableByHashable {
 }
   
 
-struct isPrimeSheetView: View {
+struct IsPrimeSheetView: View {
     @ObservedObject var state: AppState
     
     var body: some View {
@@ -132,8 +134,16 @@ struct FavoritePrimesView: View {
     @ObservedObject var state: AppState
     
     var body: some View {
-        EmptyView()
-            .navigationTitle(Text("Favorite Primes"))
+        List {
+            ForEach(state.favoritePrime) { prime in
+                Text("\(prime)")
+            }.onDelete { indexSet in
+                for index in indexSet {
+                    state.favoritePrime.remove(at: index)
+                }
+            }
+        }
+            .navigationTitle("Favorite Primes")
     }
 }
 
